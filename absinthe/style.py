@@ -18,17 +18,18 @@ class Style(Asset):
         if not self.text:
             return
 
+        print(self.saved_path)
+
         base = self.getpath()
 
         for import_url in self.imports():
             asset = Style(base, import_url)
-            if self.handle_asset(asset, subfolder='style'):
-                self.text = self.text.replace(import_url, os.path.relpath(asset.saved_path, self.saved_path).replace('../', './', 1))
-                self.save()
+            asset = self.handle_asset(asset, subfolder='style')
+            self.text = self.text.replace(import_url, os.path.relpath(asset.saved_path, self.saved_path).replace('../', './', 1))
 
         for url in self.urls():
             cls = Image
-            subfolder = 'image'
+            subfolder = 'img'
             if '.' in url:
                 try:
                     ext = url.split('.')[-1]
@@ -38,15 +39,15 @@ class Style(Asset):
                     cls = Asset
                     subfolder = 'font'
             asset = cls(base, url)
-            if self.handle_asset(asset, subfolder=subfolder):
-                self.text = self.text.replace(url, os.path.relpath(asset.saved_path, self.saved_path).replace('../', './', 1))
-                self.save()
+            asset = self.handle_asset(asset, subfolder=subfolder)
+            self.text = self.text.replace(url, os.path.relpath(asset.saved_path, self.saved_path).replace('../', './', 1))
 
+        self.save()
         super().parse_assets()
 
     def handle_asset(self, asset, subfolder=''):
         if self.main_set.get(asset.getpath()):
-            return False
+            return self.main_set.get(asset.getpath())
 
         self.main_set.add(asset)
 
@@ -56,7 +57,7 @@ class Style(Asset):
             asset.load()
             asset.save(subfolder=subfolder)
 
-        return True
+        return asset
 
     def imports(self):
         res = []

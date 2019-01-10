@@ -50,7 +50,12 @@ class Page(Asset):
         else:
             base = pq(base).attr('href')
 
-        for asset_selector, type in self.asset_selectors.items():
+        for asset_selector, _type in self.asset_selectors.items():
+            type = _type
+            subfolder = _type
+            if not isinstance(_type, str):
+                type = _type.get('type')
+                subfolder = _type.get('folder')
             try:
                 selector, attribute = asset_selector.split('/')
             except:
@@ -102,7 +107,7 @@ class Page(Asset):
                         elem = self.d('#%s' % id)
                         elem.attr('id', '')
                 else:
-                    asset = Asset(base, attr)
+                    asset = Asset(base, ref)
 
                 if not has_text:
                     asset = self.main_set.get(asset.getpath()) or asset
@@ -116,7 +121,7 @@ class Page(Asset):
 
                 if not asset.saved_path:
                     asset.load()
-                    asset.save(subfolder=type)
+                    asset.save(subfolder=subfolder)
                 # print('***')
                 # print(pq(elem))
                 # print(attribute, os.path.relpath(asset.saved_path, self.saved_path).replace('../', './', 1))
